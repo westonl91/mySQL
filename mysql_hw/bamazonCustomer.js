@@ -29,8 +29,6 @@ function afterConnection() {
         console.table(res);
 
         questions(res);
-        //console.log(prods);
-        connection.end();
     });
 }
 
@@ -41,11 +39,10 @@ function questions(res) {
         type: "input",
         name: "prod_id",
         message: "What is the ID of the item you would like to purchase?"
-        //     choices: ["Post an item", "Bid on an item"]
     }).then(function (ans) {
         //console.log(ans);
         if (Number(ans.prod_id) > 0 && Number(ans.prod_id) <= prods) {
-            var ind = ans.prod_id-1;
+            var ind = ans.prod_id - 1;
             var pname = res[ind].product_name;
             console.log("you picked", pname);
             inquirer.prompt({
@@ -58,38 +55,17 @@ function questions(res) {
                     questions(res);
                 } else {
                     console.log("You have ordered", ans.units, "units of", pname);
+                    var newQuan = res[ind].stock_quantity - ans.units;
+                    connection.query("UPDATE products SET stock_quantity=" + newQuan + " WHERE product_name = '" + pname + "'");
+                    var total = ans.units * res[ind].price;
+                    console.log("The total cost is $", total);
+                    connection.end();
                 }
             });
         } else {
             console.log("You must pick a number between 1 and", prods);
             questions(res);
         }
-
-    
-
-        //     if (ans.bidOrNah === "Post an item") {
-        //         inquirer.prompt(
-        //             [{
-        //                 type: "input",
-        //                 name: "objName",
-        //                 message: "What are you selling?"
-        //             },
-        //             {
-        //                 type:"input",
-        //                 name: "price",
-        //                 message: "how much do you want to sell it for?"
-        //             }
-        //             ]
-        //         ).then(function(ans) {
-        //             connection.query("INSERT INTO auctions (item_name, starting_bid) VALUES ("+'"' + ans.objName+'"' +", "+'"'+ ans.price+'"' + ")",
-        //                 function (err) {
-        //                 if (err) throw err;
-        //                 connection.end();
-        //             });
-        //         });
-        //     } else {
-        //         console.log("Bid");
-        //     }
 
     });
 }
